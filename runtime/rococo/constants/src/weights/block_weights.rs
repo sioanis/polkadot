@@ -16,7 +16,7 @@
 // limitations under the License.
 
 //! THIS FILE WAS AUTO-GENERATED USING THE SUBSTRATE BENCHMARK CLI VERSION 4.0.0-dev
-//! DATE: 2022-03-24 (Y/M/D)
+//! DATE: 2022-05-11 (Y/M/D)
 //!
 //! SHORT-NAME: `block`, LONG-NAME: `BlockExecution`, RUNTIME: `Development`
 //! WARMUPS: `10`, REPEAT: `100`
@@ -25,17 +25,14 @@
 
 // Executed Command:
 //   ./target/production/polkadot
-//   benchmark-overhead
-//   --chain
-//   rococo-dev
+//   benchmark
+//   overhead
+//   --chain=rococo-dev
 //   --execution=wasm
 //   --wasm-execution=compiled
-//   --weight-path
-//   runtime/rococo/constants/src/weights/
-//   --warmup
-//   10
-//   --repeat
-//   100
+//   --weight-path=runtime/rococo/constants/src/weights/
+//   --warmup=10
+//   --repeat=100
 
 use frame_support::{
 	parameter_types,
@@ -47,16 +44,16 @@ parameter_types! {
 	/// Calculated by multiplying the *Average* with `1` and adding `0`.
 	///
 	/// Stats [NS]:
-	///   Min, Max: 3_063_393, 3_278_407
-	///   Average:  3_098_278
-	///   Median:   3_076_394
-	///   Std-Dev:  46158.3
+	///   Min, Max: 3_744_634, 4_861_755
+	///   Average:  3_868_923
+	///   Median:   3_813_630
+	///   Std-Dev:  218133.97
 	///
 	/// Percentiles [NS]:
-	///   99th: 3_266_514
-	///   95th: 3_205_264
-	///   75th: 3_101_379
-	pub const BlockExecutionWeight: Weight = 3_098_278 * WEIGHT_PER_NANOS;
+	///   99th: 4_820_671
+	///   95th: 4_303_283
+	///   75th: 3_852_252
+	pub const BlockExecutionWeight: Weight = 3_868_923 * WEIGHT_PER_NANOS;
 }
 
 #[cfg(test)]

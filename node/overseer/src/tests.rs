@@ -29,8 +29,8 @@ use polkadot_node_subsystem_types::{
 	ActivatedLeaf, LeafStatus,
 };
 use polkadot_primitives::v2::{
-	CandidateHash, CollatorPair, InvalidDisputeStatementKind, ValidDisputeStatementKind,
-	ValidatorIndex,
+	CandidateHash, CandidateReceipt, CollatorPair, InvalidDisputeStatementKind,
+	ValidDisputeStatementKind, ValidatorIndex,
 };
 
 use crate::{
@@ -60,11 +60,7 @@ struct TestSubsystem1(metered::MeteredSender<usize>);
 
 impl<C> overseer::Subsystem<C, SubsystemError> for TestSubsystem1
 where
-	C: overseer::SubsystemContext<
-		Message = CandidateValidationMessage,
-		Signal = OverseerSignal,
-		AllMessages = AllMessages,
-	>,
+	C: overseer::SubsystemContext<Message = CandidateValidationMessage, Signal = OverseerSignal>,
 {
 	fn start(self, mut ctx: C) -> SpawnedSubsystem {
 		let mut sender = self.0;
@@ -95,8 +91,8 @@ impl<C> overseer::Subsystem<C, SubsystemError> for TestSubsystem2
 where
 	C: overseer::SubsystemContext<
 		Message = CandidateBackingMessage,
+		OutgoingMessages = <CandidateBackingMessage as AssociateOutgoing>::OutgoingMessages,
 		Signal = OverseerSignal,
-		AllMessages = AllMessages,
 	>,
 {
 	fn start(self, mut ctx: C) -> SpawnedSubsystem {
@@ -108,9 +104,14 @@ where
 				let mut c: usize = 0;
 				loop {
 					if c < 10 {
+						let candidate_receipt = CandidateReceipt {
+							descriptor: dummy_candidate_descriptor(dummy_hash()),
+							commitments_hash: Hash::zero(),
+						};
+
 						let (tx, _) = oneshot::channel();
 						ctx.send_message(CandidateValidationMessage::ValidateFromChainState(
-							dummy_candidate_descriptor(dummy_hash()),
+							candidate_receipt,
 							PoV { block_data: BlockData(Vec::new()) }.into(),
 							Default::default(),
 							tx,
@@ -138,11 +139,7 @@ struct ReturnOnStart;
 
 impl<C> overseer::Subsystem<C, SubsystemError> for ReturnOnStart
 where
-	C: overseer::SubsystemContext<
-		Message = CandidateBackingMessage,
-		Signal = OverseerSignal,
-		AllMessages = AllMessages,
-	>,
+	C: overseer::SubsystemContext<Message = CandidateBackingMessage, Signal = OverseerSignal>,
 {
 	fn start(self, mut _ctx: C) -> SpawnedSubsystem {
 		SpawnedSubsystem {
@@ -311,11 +308,7 @@ struct TestSubsystem5(metered::MeteredSender<OverseerSignal>);
 
 impl<C> overseer::Subsystem<C, SubsystemError> for TestSubsystem5
 where
-	C: overseer::SubsystemContext<
-		Message = CandidateValidationMessage,
-		Signal = OverseerSignal,
-		AllMessages = AllMessages,
-	>,
+	C: overseer::SubsystemContext<Message = CandidateValidationMessage, Signal = OverseerSignal>,
 {
 	fn start(self, mut ctx: C) -> SpawnedSubsystem {
 		let mut sender = self.0.clone();
@@ -347,11 +340,7 @@ struct TestSubsystem6(metered::MeteredSender<OverseerSignal>);
 
 impl<C> Subsystem<C, SubsystemError> for TestSubsystem6
 where
-	C: overseer::SubsystemContext<
-		Message = CandidateBackingMessage,
-		Signal = OverseerSignal,
-		AllMessages = AllMessages,
-	>,
+	C: overseer::SubsystemContext<Message = CandidateBackingMessage, Signal = OverseerSignal>,
 {
 	fn start(self, mut ctx: C) -> SpawnedSubsystem {
 		let mut sender = self.0.clone();
@@ -756,7 +745,7 @@ impl CounterSubsystem {
 
 impl<C, M> Subsystem<C, SubsystemError> for CounterSubsystem
 where
-	C: overseer::SubsystemContext<Message = M, Signal = OverseerSignal, AllMessages = AllMessages>,
+	C: overseer::SubsystemContext<Message = M, Signal = OverseerSignal>,
 	M: Send,
 {
 	fn start(self, mut ctx: C) -> SpawnedSubsystem {
@@ -792,8 +781,13 @@ where
 fn test_candidate_validation_msg() -> CandidateValidationMessage {
 	let (sender, _) = oneshot::channel();
 	let pov = Arc::new(PoV { block_data: BlockData(Vec::new()) });
+	let candidate_receipt = CandidateReceipt {
+		descriptor: dummy_candidate_descriptor(dummy_hash()),
+		commitments_hash: Hash::zero(),
+	};
+
 	CandidateValidationMessage::ValidateFromChainState(
-		dummy_candidate_descriptor(dummy_hash()),
+		candidate_receipt,
 		pov,
 		Duration::default(),
 		sender,
@@ -838,7 +832,7 @@ fn test_network_bridge_event<M>() -> NetworkBridgeEvent<M> {
 }
 
 fn test_statement_distribution_msg() -> StatementDistributionMessage {
-	StatementDistributionMessage::NetworkBridgeUpdateV1(test_network_bridge_event())
+	StatementDistributionMessage::NetworkBridgeUpdate(test_network_bridge_event())
 }
 
 fn test_availability_recovery_msg() -> AvailabilityRecoveryMessage {
@@ -852,7 +846,7 @@ fn test_availability_recovery_msg() -> AvailabilityRecoveryMessage {
 }
 
 fn test_bitfield_distribution_msg() -> BitfieldDistributionMessage {
-	BitfieldDistributionMessage::NetworkBridgeUpdateV1(test_network_bridge_event())
+	BitfieldDistributionMessage::NetworkBridgeUpdate(test_network_bridge_event())
 }
 
 fn test_provisioner_msg() -> ProvisionerMessage {
