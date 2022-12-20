@@ -8,7 +8,7 @@ edition.workspace = true
 [dependencies]
 codec = { package = "parity-scale-codec", version = "3.0.0" }
 honggfuzz = "0.5.55"
-scale-info = { version = "2.1.2", features = ["derive"] }
+scale-info = { version = "2.3.1", features = ["derive"] }
 
 frame-system = { git = "https://github.com/paritytech/substrate", branch = "master" }
 frame-support = { git = "https://github.com/paritytech/substrate", branch = "master" }
